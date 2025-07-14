@@ -70,8 +70,6 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 }));
 
 const NavItem = styled(ListItem)(({ theme, active }) => ({
-  margin: '4px 16px',
-  borderRadius: 12,
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
@@ -81,7 +79,7 @@ const NavItem = styled(ListItem)(({ theme, active }) => ({
   },
   '& .MuiListItemIcon-root': {
     color: 'white',
-    minWidth: 40,
+    minWidth: 60,
   },
 }));
 
@@ -265,26 +263,6 @@ const Home = () => {
     <Box>
       <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar
-            src={userData.avatar}
-            sx={{ 
-              width: 48, 
-              height: 48, 
-              bgcolor: 'rgba(255,255,255,0.2)',
-              fontSize: '1.2rem',
-              fontWeight: 'bold'
-            }}
-          >
-            {userData.name.split(' ').map(n => n[0]).join('')}
-          </Avatar>
-          <Box>
-            <Typography variant="body1" fontWeight="bold">
-              {userData.name}
-            </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.8 }}>
-              {userData.department}
-            </Typography>
-          </Box>
         </Box>
       </Box>
       
