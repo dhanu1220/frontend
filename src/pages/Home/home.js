@@ -1,39 +1,140 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Clock, 
-  Bell, 
-  User, 
-  Calendar, 
-  TrendingUp, 
-  FileText, 
-  CheckCircle, 
+import {
+  Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  Card,
+  CardContent,
+  Avatar,
+  Chip,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  LinearProgress,
+  IconButton,
+  Badge,
+  AppBar,
+  Toolbar,
+  Drawer,
+  Stack,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import {
+  Dashboard,
+  Person,
+  AccessTime,
+  Announcement,
+  Work,
+  Analytics,
   Settings,
-  ChevronRight,
-  Users,
-  Target,
-  Award,
-  Activity,
-  Briefcase,
-  Home,
-  MessageSquare,
-  BarChart3,
-  BookOpen,
-  Coffee,
-  Star,
-  Zap,
-  Heart
-} from 'lucide-react';
+  Assignment,
+  Group,
+  CheckCircle,
+  Schedule,
+  TrendingUp,
+  NotificationsActive,
+  CalendarToday,
+  Description,
+  EmojiEvents,
+  Menu,
+  Close,
+  Timeline,
+  FolderOpen
+} from '@mui/icons-material';
 
-const Dashboard = () => {
+const drawerWidth = 260;
+
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  width: drawerWidth,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: drawerWidth,
+    boxSizing: 'border-box',
+    background: 'linear-gradient(180deg, #1e3c72 0%, #2a5298 100%)',
+    color: 'white',
+    borderRight: 'none',
+  },
+}));
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)',
+  boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+  zIndex: theme.zIndex.drawer + 1,
+}));
+
+const NavItem = styled(ListItem)(({ theme, active }) => ({
+  margin: '4px 16px',
+  borderRadius: 12,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
+  '&:hover': {
+    background: 'rgba(255,255,255,0.1)',
+    transform: 'translateX(4px)',
+  },
+  '& .MuiListItemIcon-root': {
+    color: 'white',
+    minWidth: 40,
+  },
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: 16,
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  transition: 'all 0.3s ease',
+  border: '1px solid rgba(30, 60, 114, 0.1)',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+  },
+}));
+
+const GradientCard = styled(Card)(({ theme, gradient }) => ({
+  borderRadius: 16,
+  background: gradient || 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+  color: 'white',
+  boxShadow: '0 8px 30px rgba(30, 60, 114, 0.3)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 12px 40px rgba(30, 60, 114, 0.4)',
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: 12,
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: '10px 24px',
+  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+  },
+}));
+
+const Home = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [attendanceStatus, setAttendanceStatus] = useState('checked-out');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState('dashboard');
   
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const userData = {
     name: "John Doe",
     employeeId: "EMP001",
     department: "Engineering",
-    position: "Senior Developer",
-    avatar: "JD"
+    avatar: "/api/placeholder/56/56"
   };
 
   const attendanceData = {
@@ -49,34 +150,23 @@ const Dashboard = () => {
     {
       id: 1,
       title: "Q3 Results Exceed Expectations",
-      summary: "Company achieves 15% growth in revenue this quarter with record-breaking performance",
+      summary: "Company achieves 15% growth in revenue this quarter",
       date: "2 hours ago",
-      priority: "high",
-      category: "Financial"
+      priority: "high"
     },
     {
       id: 2,
       title: "New Office Opening in Mumbai",
-      summary: "Expansion plans include hiring 200+ employees across multiple departments",
+      summary: "Expansion plans include hiring 200+ employees",
       date: "1 day ago",
-      priority: "medium",
-      category: "Expansion"
+      priority: "medium"
     },
     {
       id: 3,
       title: "Employee Wellness Program Launch",
-      summary: "New health and wellness benefits now available including gym memberships",
+      summary: "New health and wellness benefits now available",
       date: "3 days ago",
-      priority: "low",
-      category: "Benefits"
-    },
-    {
-      id: 4,
-      title: "Tech Innovation Summit 2024",
-      summary: "Annual summit scheduled for December with industry leaders and keynote speakers",
-      date: "5 days ago",
-      priority: "medium",
-      category: "Events"
+      priority: "low"
     }
   ];
 
@@ -88,8 +178,7 @@ const Dashboard = () => {
       progress: 75,
       deadline: "Dec 15, 2024",
       team: 5,
-      priority: "high",
-      description: "Complete recipe database with search and categorization"
+      priority: "high"
     },
     {
       id: 2,
@@ -98,8 +187,7 @@ const Dashboard = () => {
       progress: 90,
       deadline: "Dec 10, 2024",
       team: 3,
-      priority: "medium",
-      description: "Modern UI/UX redesign for better user experience"
+      priority: "medium"
     },
     {
       id: 3,
@@ -108,23 +196,35 @@ const Dashboard = () => {
       progress: 25,
       deadline: "Jan 20, 2025",
       team: 4,
-      priority: "low",
-      description: "Real-time analytics and reporting system"
+      priority: "low"
     }
   ];
 
-  const recentActivities = [
-    { id: 1, action: "Completed code review", time: "30 min ago", type: "work" },
-    { id: 2, action: "Attended team standup", time: "2 hours ago", type: "meeting" },
-    { id: 3, action: "Updated project documentation", time: "4 hours ago", type: "documentation" },
-    { id: 4, action: "Merged feature branch", time: "Yesterday", type: "development" }
+  const navItems = [
+    { icon: Dashboard, label: 'Dashboard', id: 'dashboard' },
+    { icon: Person, label: 'Profile', id: 'profile' },
+    { icon: Work, label: 'Projects', id: 'projects' },
+    { icon: AccessTime, label: 'Attendance', id: 'attendance' },
+    { icon: Analytics, label: 'Analytics', id: 'analytics' },
+    { icon: Assignment, label: 'Tasks', id: 'tasks' },
+    { icon: Group, label: 'Team', id: 'team' },
+    { icon: Description, label: 'Documents', id: 'documents' },
+    { icon: EmojiEvents, label: 'Awards', id: 'awards' },
+    { icon: Settings, label: 'Settings', id: 'settings' },
   ];
 
-  const quickStats = [
-    { label: "Tasks Completed", value: "24", change: "+12%", icon: CheckCircle, color: "text-green-500" },
-    { label: "Projects Active", value: "3", change: "+1", icon: Briefcase, color: "text-blue-500" },
-    { label: "Team Members", value: "12", change: "+2", icon: Users, color: "text-purple-500" },
-    { label: "This Month", value: "156h", change: "+8%", icon: Clock, color: "text-orange-500" }
+  const stats = [
+    { label: 'Total Projects', value: projects.length, icon: Assignment, color: '#1e3c72' },
+    { label: 'Completed Tasks', value: 24, icon: CheckCircle, color: '#2a5298' },
+    { label: 'Team Members', value: 12, icon: Group, color: '#3d6bb3' },
+    { label: 'Productivity', value: '94%', icon: Timeline, color: '#5088d1' }
+  ];
+
+  const quickActions = [
+    { icon: Schedule, label: 'Schedule', color: '#1e3c72' },
+    { icon: TrendingUp, label: 'Performance', color: '#2a5298' },
+    { icon: FolderOpen, label: 'Documents', color: '#3d6bb3' },
+    { icon: Analytics, label: 'Analytics', color: '#5088d1' },
   ];
 
   useEffect(() => {
@@ -134,315 +234,357 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const handleAttendance = () => {
     setAttendanceStatus(attendanceStatus === 'checked-out' ? 'checked-in' : 'checked-out');
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'In Progress': return 'bg-blue-100 text-blue-800';
-      case 'Review': return 'bg-yellow-100 text-yellow-800';
-      case 'Planning': return 'bg-gray-100 text-gray-800';
-      case 'Completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'In Progress': return '#1e3c72';
+      case 'Review': return '#ff9800';
+      case 'Planning': return '#2196f3';
+      case 'Completed': return '#4caf50';
+      default: return '#gray';
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high': return 'error';
+      case 'medium': return 'warning';
+      case 'low': return 'success';
+      default: return 'default';
     }
   };
 
+  const drawer = (
+    <Box>
+      <Box sx={{ p: 3, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar
+            src={userData.avatar}
+            sx={{ 
+              width: 48, 
+              height: 48, 
+              bgcolor: 'rgba(255,255,255,0.2)',
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}
+          >
+            {userData.name.split(' ').map(n => n[0]).join('')}
+          </Avatar>
+          <Box>
+            <Typography variant="body1" fontWeight="bold">
+              {userData.name}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+              {userData.department}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+      
+      <List sx={{ pt: 2 }}>
+        {navItems.map((item) => (
+          <NavItem
+            key={item.id}
+            active={activeNav === item.id}
+            onClick={() => setActiveNav(item.id)}
+          >
+            <ListItemIcon>
+              <item.icon />
+            </ListItemIcon>
+            <ListItemText primary={item.label} />
+          </NavItem>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{userData.avatar}</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Welcome back, {userData.name}!</h1>
-                <p className="text-sm text-gray-600">{userData.department} • {userData.employeeId}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-lg font-semibold text-gray-900">
-                  {currentTime.toLocaleTimeString()}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {currentTime.toLocaleDateString('en-US', { 
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </div>
-              </div>
-              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-                <Bell className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      <StyledAppBar position="fixed">
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { md: 'none' } }}
+          >
+            <Menu />
+          </IconButton>
+          
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            Employee Dashboard
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <StyledButton
+              variant="contained"
+              size="small"
+              onClick={handleAttendance}
+              sx={{
+                bgcolor: attendanceStatus === 'checked-out' ? '#4caf50' : '#f44336',
+                '&:hover': {
+                  bgcolor: attendanceStatus === 'checked-out' ? '#45a049' : '#da190b',
+                },
+                mr: 2
+              }}
+            >
+              {attendanceStatus === 'checked-out' ? 'Check In' : 'Check Out'}
+            </StyledButton>
+            <Typography variant="body2">
+              {currentTime.toLocaleTimeString()}
+            </Typography>
+            <IconButton color="inherit">
+              <Badge badgeContent={3} color="error">
+                <NotificationsActive />
+              </Badge>
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </StyledAppBar>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {quickStats.map((stat, index) => (
-            <div key={index} className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-sm text-green-600 font-medium">{stat.change}</p>
-                </div>
-                <div className={`p-3 rounded-full bg-gray-50 ${stat.color}`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      >
+        <StyledDrawer
+          variant={isMobile ? 'temporary' : 'permanent'}
+          open={isMobile ? mobileOpen : true}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true,
+          }}
+        >
+          {drawer}
+        </StyledDrawer>
+      </Box>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Attendance Card */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Clock className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Attendance</h3>
-                    <p className="text-sm text-gray-600">Today's Status</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleAttendance}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                    attendanceStatus === 'checked-out'
-                      ? 'bg-green-500 hover:bg-green-600 text-white'
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
-                  {attendanceStatus === 'checked-out' ? 'Check In' : 'Check Out'}
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Check In</p>
-                  <p className="text-lg font-semibold text-gray-900">{attendanceData.checkInTime}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Check Out</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {attendanceData.checkOutTime || 'Not checked out'}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Working Hours</p>
-                  <p className="text-lg font-semibold text-blue-600">{attendanceData.workingHours}</p>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex justify-between text-sm text-gray-600">
-                <span>Weekly: {attendanceData.weeklyHours}</span>
-                <span>Monthly: {attendanceData.monthlyHours}</span>
-              </div>
-            </div>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          mt: { xs: 7, sm: 8 },
+        }}
+      >
+        <Container maxWidth="xl">
+          {/* Welcome Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" fontWeight="bold" color="#1e3c72" gutterBottom>
+              Welcome back, {userData.name}!
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {currentTime.toLocaleDateString('en-US', { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </Typography>
+          </Box>
 
-            {/* Projects Card */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Briefcase className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">My Projects</h3>
-                    <p className="text-sm text-gray-600">Current Assignments</p>
-                  </div>
-                </div>
-                <button className="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                  View All
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                {projects.map((project) => (
-                  <div key={project.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{project.name}</h4>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                        {project.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">{project.description}</p>
-                    <div className="mb-3">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm text-gray-600">Progress</span>
-                        <span className="text-sm font-medium text-gray-900">{project.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${project.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                      <span>Due: {project.deadline}</span>
-                      <span>{project.team} members</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* Stats Cards */}
+          <Grid container spacing={15} sx={{ mb: 10 }}>
+            {stats.map((stat, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <StyledCard sx={{ width: '100%' , padding:'20px'}}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h6" color="text.secondary" >
+                          {stat.label}
+                        </Typography>
+                        <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
+                          {stat.value}
+                        </Typography>
+                      </Box>
+                      <Avatar sx={{ bgcolor: stat.color, width: 65, height: 65 }}>
+                        <stat.icon sx={{ fontSize: 28 }} />
+                      </Avatar>
+                    </Box>
+                  </CardContent>
+                </StyledCard>
+              </Grid>
+            ))}
+          </Grid>
 
-            {/* Recent Activity */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Activity className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                  <p className="text-sm text-gray-600">Your latest actions</p>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                      <p className="text-xs text-gray-600">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-8">
+          {/* Company News and Projects - Half and Half Layout */}
+          <Grid container spacing={10} sx={{ mt: 4 }}>
             {/* Company News */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-100 rounded-lg relative">
-                    <Bell className="w-5 h-5 text-orange-600" />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Company News</h3>
-                    <p className="text-sm text-gray-600">Latest Updates</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {companyNews.map((news) => (
-                  <div key={news.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 text-sm">{news.title}</h4>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(news.priority)}`}>
-                        {news.priority}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">{news.summary}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>{news.date}</span>
-                      <span className="bg-gray-200 px-2 py-1 rounded">{news.category}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ bgcolor: '#fff', borderRadius: 10, p: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)',padding:'90px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 7, mb: 3 }}>
+                  <Badge badgeContent={companyNews.length} color="error">
+                    <Announcement sx={{ fontSize: 32, color: '#1e3c72' }} />
+                  </Badge>
+                  <Box>
+                    <Typography variant="h4" fontWeight="bold" color="#1e3c72">
+                      Company News
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary">
+                      Stay updated with the latest
+                    </Typography>
+                  </Box>
+                </Box>
+                <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+                  {companyNews.map((news, index) => (
+                    <React.Fragment key={news.id}>
+                      <ListItem sx={{ px: 0, py: 2 }}>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                              <Typography variant="h5" fontWeight="bold" sx={{ color: '#1e3c72' }}>
+                                {news.title}
+                              </Typography>
+                              <Chip
+                                label={news.priority}
+                                size="small"
+                                color={getPriorityColor(news.priority)}
+                                sx={{ fontSize: '0.75rem' }}
+                              />
+                            </Box>
+                          }
+                          secondary={
+                            <Box>
+                              <Typography variant="body1" color="text.secondary">
+                                {news.summary}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                                {news.date}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      </ListItem>
+                      {index < companyNews.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </Box>
+            </Grid>
 
-            {/* Quick Actions */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { icon: Calendar, label: 'Schedule', color: 'bg-blue-50 text-blue-600' },
-                  { icon: TrendingUp, label: 'Performance', color: 'bg-green-50 text-green-600' },
-                  { icon: FileText, label: 'Documents', color: 'bg-purple-50 text-purple-600' },
-                  { icon: User, label: 'Profile', color: 'bg-orange-50 text-orange-600' },
-                  { icon: MessageSquare, label: 'Messages', color: 'bg-pink-50 text-pink-600' },
-                  { icon: Settings, label: 'Settings', color: 'bg-gray-50 text-gray-600' }
-                ].map((action, index) => (
-                  <button
-                    key={index}
-                    className="flex flex-col items-center space-y-2 p-4 rounded-lg hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className={`p-2 rounded-lg ${action.color} group-hover:scale-110 transition-transform`}>
-                      <action.icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Performance Summary */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-white/20">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Award className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Performance</h3>
-                  <p className="text-sm text-gray-600">This Month</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Productivity</span>
-                  <span className="text-sm font-medium text-gray-900">92%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Goals Met</span>
-                  <span className="text-sm font-medium text-gray-900">8/10</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '80%' }}></div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Team Rating</span>
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+            {/* Projects */}
+            <Grid item xs={12} md={6}>
+              <StyledCard sx={{ height: '100%' , borderRadius: 10 }}>
+                <CardContent sx={{ paddingRight: 15, paddingLeft: 15, paddingTop: 10, paddingBottom: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                    <Work sx={{ fontSize: 32, color: '#1e3c72' }} />
+                    <Box>
+                      <Typography variant="h4" fontWeight="bold" color="#1e3c72">
+                        My Projects
+                      </Typography>
+                      <Typography variant="h6" color="text.secondary">
+                        Current Assignments
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    {projects.map((project, index) => (
+                      <React.Fragment key={project.id}>
+                        <ListItem sx={{ px: 0, py: 2, flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#1e3c72' }}>
+                              {project.name}
+                            </Typography>
+                            <Chip
+                              label={project.status}
+                              size="small"
+                              sx={{ 
+                                bgcolor: getStatusColor(project.status),
+                                color: 'white',
+                                fontSize: '0.75rem',
+                                margin: '4px 8px',
+                              }}
+                            />
+                          </Box>
+                          <Box sx={{ width: '100%', mb: 1 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                Progress
+                              </Typography>
+                              <Typography variant="caption" fontWeight="bold">
+                                {project.progress}%
+                              </Typography>
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={project.progress}
+                              sx={{ 
+                                height: 6,
+                                borderRadius: 4,
+                                bgcolor: '#e0e0e0',
+                                '& .MuiLinearProgress-bar': {
+                                  borderRadius: 4,
+                                  bgcolor: '#1e3c72'
+                                }
+                              }}
+                            />
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Due: {project.deadline}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {project.team} members
+                            </Typography>
+                          </Box>
+                        </ListItem>
+                        {index < projects.length - 1 && <Divider />}
+                      </React.Fragment>
                     ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+                  </List>
+                </CardContent>
+              </StyledCard>
+            </Grid>
+          </Grid>
+
+          {/* Quick Actions */}
+          <Box sx={{ mt: 8 }}>
+            <StyledCard>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h5" fontWeight="bold" color="#1e3c72" gutterBottom>
+                  Quick Actions
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Frequently used features
+                </Typography>
+                <Grid container spacing={15}>
+                  {quickActions.map((action, index) => (
+                    <Grid item xs={6} sm={3} key={index}>
+                      <StyledButton
+                        fullWidth
+                        variant="contained"
+                        startIcon={<action.icon />}
+                        sx={{
+                          bgcolor: action.color,
+                          px: 10,
+                          py: 3,
+                          '&:hover': {
+                            bgcolor: action.color,
+                            filter: 'brightness(1.1)',
+                          }
+                        }}
+                      >
+                        {action.label}
+                      </StyledButton>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </StyledCard>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 
-export default Dashboard;
+export default Home;
