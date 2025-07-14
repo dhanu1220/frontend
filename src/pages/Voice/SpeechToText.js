@@ -29,7 +29,7 @@ const SpeechToText = () => {
     })
     .catch((err) => {
       setError('Microphone access denied. Please allow microphone access.');
-      console.error('Microphone error:', err);
+      console.error('error:', err);
     });
 
     return () => {
