@@ -1,0 +1,162 @@
+/* Main container */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Left section with welcome text - 40% width */
+.left-section {
+  flex: 0 0 40%;
+  background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 5%;
+  position: relative;
+}
+
+/* Right section with form - 60% width */
+.right-section {
+  flex: 0 0 30%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rem;
+}
+
+/* Welcome text styling */
+.welcome-text {
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Experience text styling */
+.experience-text {
+  font-size: 24px;
+  color: white;
+  line-height: 1.4;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.experience-text div {
+  margin-bottom: 0.2rem;
+}
+
+/* Form container */
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 3rem 2rem;
+  box-shadow: none !important;
+}
+
+/* Form box */
+.form-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header styling */
+.header {
+  color: #87CEEB;
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+  width: 100%;
+}
+
+/* Sign in button */
+.sign-in-button {
+  background-color: #87CEEB !important;
+  color: white !important;
+  padding: 12px 0 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 2rem !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  letter-spacing: 1px !important;
+  transition: all 0.3s ease !important;
+}
+
+.sign-in-button:hover {
+  background-color: #4682B4 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(70, 130, 180, 0.3);
+}
+
+/* Signup link */
+.signup-link {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.signup-link a {
+  color: #4682B4;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.signup-link a:hover {
+  color: #87CEEB;
+  text-decoration: underline;
+}
+
+/* Input field styling */
+.MuiTextField-root {
+  margin-bottom: 1rem !important;
+}
+
+.MuiInput-underline:before {
+  border-bottom-color: #E0E0E0 !important;
+}
+
+.MuiInput-underline:hover:before {
+  border-bottom-color: #87CEEB !important;
+}
+
+.MuiInput-underline:after {
+  border-bottom-color: #87CEEB !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #87CEEB !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .left-section {
+    min-height: 40vh;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .welcome-text {
+    font-size: 36px;
+  }
+  
+  .experience-text {
+    font-size: 20px;
+  }
+  
+  .right-section {
+    padding: 1rem;
+  }
+  
+  .form-container {
+    padding: 2rem 1.5rem;
+  }
+}
