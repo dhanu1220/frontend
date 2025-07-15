@@ -6,15 +6,24 @@ import Button from '@mui/material/Button';
 import { Link, useNavigate } from "react-router-dom";
 import Box from '@mui/material/Box';
 import { Link as MuiLink } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import "./login.css";
 
 const Login = () => {
   const [employeeid, setEmployeeid] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const user = { employeeid, password };
 
@@ -28,15 +37,44 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Login successful!");
+        // Store session data in localStorage
+        localStorage.setItem('session_id', data.session_id);
+        localStorage.setItem('employeeid', data.employeeid);
+        localStorage.setItem('name', data.name);
+
+        setSnackbar({
+          open: true,
+          message: "Login successful!",
+          severity: "success",
+        });
         console.log(data);
-        navigate("/"); // change to your desired route
+        
+        // Navigate to home page
+        navigate("/");
       } else {
-        alert(data.detail || "Login failed.");
+        setSnackbar({
+          open: true,
+          message: data.detail || "Login failed.",
+          severity: "error",
+        });
       }
     } catch (err) {
-      alert("Error connecting to server");
+      console.error("Login error:", err);
+      setSnackbar({
+        open: true,
+        message: "Error connecting to server",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -63,6 +101,7 @@ const Login = () => {
               value={employeeid}
               onChange={(e) => setEmployeeid(e.target.value)}
               sx={{ mb: 2 }}
+              disabled={loading}
             />
 
             <TextField
@@ -74,6 +113,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               sx={{ mb: 3 }}
+              disabled={loading}
             />
 
             <Button 
@@ -81,8 +121,9 @@ const Login = () => {
               fullWidth 
               variant="contained" 
               className="sign-in-button"
+              disabled={loading}
             >
-              LOGIN
+              {loading ? "LOGGING IN..." : "LOGIN"}
             </Button>
 
             <div className="signup-link">
@@ -93,6 +134,21 @@ const Login = () => {
           </Box>
         </Paper>
       </div>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

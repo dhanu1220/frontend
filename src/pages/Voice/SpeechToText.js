@@ -1,121 +1,183 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Avatar,
+  Stack,
+  Tooltip,
+  Divider,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import {
+  Mic,
+  Stop,
+  Send,
+  Image,
+  CloudUpload,
+  Clear,
+  SmartToy,
+  Psychology,
+  AttachFile,
+} from '@mui/icons-material';
+import Navbar from 'E:/cat_hackathon/frontend/src/pages/Home/navbar.js';
+import Sidebar from 'E:/cat_hackathon/frontend/src/pages/Home/sidebar.js';
+import useAudioRecording from 'E:/cat_hackathon/frontend/src/hooks/useAudioRecording.js';
 
-const SpeechToText = () => {
-  const [transcript, setTranscript] = useState('');
-  const [nlpResults, setNlpResults] = useState([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState('en-US');
-  const [error, setError] = useState('');
-  
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const streamRef = useRef(null);
+const drawerWidth = 260;
 
-  useEffect(() => {
-    // Request microphone permission on component mount
-    navigator.mediaDevices.getUserMedia({ 
-      audio: { 
-        sampleRate: 16000, 
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true
-      } 
-    })
-    .then((stream) => {
-      console.log('Microphone access granted');
-      streamRef.current = stream;
-      setError('');
-    })
-    .catch((err) => {
-      setError('Microphone access denied. Please allow microphone access.');
-      console.error('error:', err);
-    });
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: 16,
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  transition: 'all 0.3s ease',
+  border: '1px solid rgba(30, 60, 114, 0.1)',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+  },
+}));
 
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: 12,
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: '12px 24px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+  },
+}));
 
-  const startRecording = () => {
-    if (!streamRef.current) {
-      setError('Microphone not available.');
-      return;
+const InputCard = styled(Card)(({ theme }) => ({
+  borderRadius: 12,
+  border: '2px solid #e0e0e0',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    borderColor: '#1e3c72',
+  },
+  '&:focus-within': {
+    borderColor: '#1e3c72',
+    boxShadow: '0 0 0 2px rgba(30, 60, 114, 0.2)',
+  },
+}));
+
+const ResultCard = styled(Card)(({ theme }) => ({
+  borderRadius: 12,
+  backgroundColor: '#f8fafc',
+  border: '1px solid rgba(30, 60, 114, 0.1)',
+  marginBottom: theme.spacing(2),
+}));
+
+const IconButtonStyled = styled(IconButton)(({ theme }) => ({
+  borderRadius: 12,
+  padding: 12,
+  transition: 'all 0.3s ease',
+  border: '1px solid rgba(30, 60, 114, 0.2)',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  },
+}));
+
+const SmartAssist = () => {
+  const [textInput, setTextInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [attendanceStatus, setAttendanceStatus] = useState('checked-out');
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [activeNav, setActiveNav] = useState('smartassist');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [results, setResults] = useState([]);
+
+  const fileInputRef = useRef(null);
+  const audioFileRef = useRef(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Use the audio recording hook
+  const {
+    isRecording,
+    isLoading: audioLoading,
+    error: audioError,
+    transcript,
+    nlpResults,
+    startRecording,
+    stopRecording,
+    processAudioFile,
+    clearResults: clearAudioResults,
+  } = useAudioRecording();
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
-    setError('');
-    setTranscript('');
-    setNlpResults([]);
-    audioChunksRef.current = [];
+  const handleAudioUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      processAudioFile(file);
+    }
+  };
 
+  const processText = async () => {
+    if (!textInput.trim()) return;
+
+    setIsProcessing(true);
     try {
-      // Try to use WAV format first, fall back to WebM if not supported
-      let mimeType = 'audio/wav';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'audio/webm;codecs=opus';
-      }
-      
-      const mediaRecorder = new MediaRecorder(streamRef.current, {
-        mimeType: mimeType
+      const response = await fetch('http://localhost:8000/process-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: textInput }),
       });
 
-      mediaRecorderRef.current = mediaRecorder;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        console.log('Recording stopped');
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      console.log('Recording started');
-    } catch (err) {
-      setError('Failed to start recording: ' + err.message);
-      console.error('Recording error:', err);
+      const data = await response.json();
+      setResults(data.entities || []);
+    } catch (error) {
+      console.error('Text processing error:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const stopRecordingAndSend = async () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      setIsRecording(false);
-      setIsLoading(true);
-      
-      mediaRecorderRef.current.stop();
-      
-      // Wait for the final data to be available
-      await new Promise(resolve => {
-        mediaRecorderRef.current.onstop = resolve;
-      });
+  const processImage = async () => {
+    if (!selectedImage) return;
 
-      if (audioChunksRef.current.length > 0) {
-        // Determine the correct MIME type and file extension
-        const mimeType = mediaRecorderRef.current.mimeType;
-        const fileExtension = mimeType.includes('wav') ? '.wav' : '.webm';
-        const fileName = `recording${fileExtension}`;
-        
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        await sendAudioToServer(audioBlob, fileName);
-      } else {
-        setError('No audio data captured');
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const sendAudioToServer = async (audioBlob, fileName = 'recording.webm') => {
+    setIsProcessing(true);
     try {
       const formData = new FormData();
-      formData.append('audio', audioBlob, fileName);
-      formData.append('language', language);
+      formData.append('image', selectedImage);
 
-      const response = await fetch('http://localhost:8000/transcribe-audio', {
+      const response = await fetch('http://localhost:8000/process-image', {
         method: 'POST',
         body: formData,
       });
@@ -125,156 +187,345 @@ const SpeechToText = () => {
       }
 
       const data = await response.json();
-      
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setTranscript(data.transcript || '');
-        setNlpResults(data.entities || []);
-      }
+      setResults(data.results || []);
     } catch (error) {
-      setError('Failed to transcribe audio: ' + error.message);
-      console.error('Transcription error:', error);
+      console.error('Image processing error:', error);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const testApi = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('http://localhost:8000/process-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: 'Test text for New York and John' }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Test API response:', data);
-      setNlpResults(data.entities);
-      setTranscript('Test text for New York and John');
-    } catch (error) {
-      setError('Test API failed: ' + error.message);
-      console.error('Test API error:', error);
-    }
-    setIsLoading(false);
-  };
-
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
-    if (isRecording) {
-      stopRecordingAndSend();
+  const handleProcess = () => {
+    if (textInput.trim()) {
+      processText();
+    } else if (selectedImage) {
+      processImage();
     }
   };
+
+  const clearAll = () => {
+    setTextInput('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    setResults([]);
+    clearAudioResults();
+  };
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleAttendance = () => {
+    setAttendanceStatus(attendanceStatus === 'checked-out' ? 'checked-in' : 'checked-out');
+  };
+
+  // Update text input when transcript is available
+  const displayText = transcript || textInput;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
-          🎤 Speech Recognition App
-        </h1>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-600 font-medium">{error}</p>
-          </div>
-        )}
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      <Navbar
+        attendanceStatus={attendanceStatus}
+        handleAttendance={handleAttendance}
+        currentTime={currentTime}
+        handleDrawerToggle={handleDrawerToggle}
+        isMobile={isMobile}
+      />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        handleDrawerToggle={handleDrawerToggle}
+        isMobile={isMobile}
+        activeNav={activeNav}
+        setActiveNav={setActiveNav}
+      />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          mt: { xs: 7, sm: 8 },
+        }}
+      >
+        <Container maxWidth="lg">
+          {/* Header */}
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
+            <Avatar
+              sx={{
+                bgcolor: '#1e3c72',
+                width: 64,
+                height: 64,
+                mx: 'auto',
+                mb: 2,
+              }}
+            >
+              <SmartToy sx={{ fontSize: 32 }} />
+            </Avatar>
+            <Typography variant="h4" fontWeight="bold" color="#1e3c72" gutterBottom>
+              Smart Assist
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Intelligent text, image, and audio processing powered by AI
+            </Typography>
+          </Box>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Language
-          </label>
-          <select
-            value={language}
-            onChange={handleLanguageChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="en-US">English (US)</option>
-            <option value="es-ES">Spanish</option>
-            <option value="fr-FR">French</option>
-            <option value="de-DE">German</option>
-            <option value="hi-IN">Hindi</option>
-          </select>
-        </div>
+          {/* Input Section */}
+          <InputCard sx={{ mb: 4 }}>
+            <CardContent>
+              {/* Image Preview */}
+              {imagePreview && (
+                <Box sx={{ mb: 2, textAlign: 'center' }}>
+                  <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      style={{ 
+                        maxWidth: '200px', 
+                        maxHeight: '200px', 
+                        borderRadius: 8,
+                        border: '2px solid #1e3c72'
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        bgcolor: '#f44336',
+                        color: 'white',
+                        '&:hover': { bgcolor: '#d32f2f' },
+                      }}
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setImagePreview(null);
+                      }}
+                    >
+                      <Clear fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              )}
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Transcribed Text
-          </label>
-          <textarea
-            value={transcript}
-            readOnly
-            className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 min-h-[100px] resize-none"
-            placeholder="Your speech will appear here..."
-          />
-        </div>
+              {/* Audio Error */}
+              {audioError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {audioError}
+                </Alert>
+              )}
 
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={isRecording ? stopRecordingAndSend : startRecording}
-            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
-              isRecording 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
-            }`}
-            disabled={isLoading}
-          >
-            {isRecording ? '🛑 Stop & Send' : '🎤 Start Recording'}
-          </button>
-          
-          <button
-            onClick={testApi}
-            className="py-3 px-6 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all duration-200"
-            disabled={isLoading}
-          >
-            🧪 Test API
-          </button>
-        </div>
+              {/* Recording Status */}
+              {isRecording && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      bgcolor: '#f44336',
+                      borderRadius: '50%',
+                      animation: 'pulse 1.5s infinite',
+                    }}
+                  />
+                  <Typography variant="body2" color="#f44336">
+                    Recording... Click the mic button to stop
+                  </Typography>
+                </Box>
+              )}
 
-        {isLoading && (
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-3"></div>
-              <span className="text-gray-600">Processing...</span>
-            </div>
-          </div>
-        )}
+              {/* Main Input */}
+              <TextField
+                fullWidth
+                multiline
+                rows={6}
+                value={displayText}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Type your message, upload an image, or record audio for AI analysis..."
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  },
+                }}
+              />
 
-        {isRecording && (
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center">
-              <div className="animate-pulse bg-red-500 rounded-full h-3 w-3 mr-3"></div>
-              <span className="text-green-600 font-medium">🎧 Listening...</span>
-            </div>
-          </div>
-        )}
+              {/* Bottom Action Icons */}
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Divider sx={{ mb: 2, opacity: 0.6 }} />
+                <Stack 
+                  direction="row" 
+                  spacing={2} 
+                  sx={{ 
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 1
+                  }}
+                >
+                  {/* Image Upload */}
+                  <Tooltip title="Upload Image">
+                    <IconButtonStyled
+                      onClick={() => fileInputRef.current?.click()}
+                      sx={{ 
+                        color: '#1e3c72',
+                        bgcolor: 'rgba(30, 60, 114, 0.05)',
+                        '&:hover': { bgcolor: 'rgba(30, 60, 114, 0.1)' }
+                      }}
+                    >
+                      <Image />
+                    </IconButtonStyled>
+                  </Tooltip>
 
-        {nlpResults.length > 0 && (
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">
-              📋 Named Entities:
-            </h2>
-            <div className="space-y-2">
-              {nlpResults.map((entity, index) => (
-                <div key={index} className="flex items-center justify-between bg-white p-3 rounded border">
-                  <span className="text-gray-700 font-medium">{entity.text}</span>
-                  <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {entity.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+                  {/* Voice Recording */}
+                  <Tooltip title={isRecording ? "Stop Recording" : "Start Recording"}>
+                    <IconButtonStyled
+                      onClick={isRecording ? stopRecording : startRecording}
+                      disabled={audioLoading}
+                      sx={{
+                        color: isRecording ? '#f44336' : '#1e3c72',
+                        bgcolor: isRecording ? 'rgba(244, 67, 54, 0.1)' : 'rgba(30, 60, 114, 0.05)',
+                        '&:hover': {
+                          bgcolor: isRecording ? 'rgba(244, 67, 54, 0.2)' : 'rgba(30, 60, 114, 0.1)',
+                        },
+                      }}
+                    >
+                      {isRecording ? <Stop /> : <Mic />}
+                    </IconButtonStyled>
+                  </Tooltip>
+
+                  {/* Audio File Upload */}
+                  <Tooltip title="Upload Audio File">
+                    <IconButtonStyled
+                      onClick={() => audioFileRef.current?.click()}
+                      disabled={audioLoading}
+                      sx={{ 
+                        color: '#1e3c72',
+                        bgcolor: 'rgba(30, 60, 114, 0.05)',
+                        '&:hover': { bgcolor: 'rgba(30, 60, 114, 0.1)' }
+                      }}
+                    >
+                      <AttachFile />
+                    </IconButtonStyled>
+                  </Tooltip>
+
+                  {/* Clear Button */}
+                  {(displayText || selectedImage) && (
+                    <Tooltip title="Clear All">
+                      <IconButtonStyled
+                        onClick={clearAll}
+                        sx={{ 
+                          color: '#666',
+                          bgcolor: 'rgba(102, 102, 102, 0.05)',
+                          '&:hover': { bgcolor: 'rgba(102, 102, 102, 0.1)' }
+                        }}
+                      >
+                        <Clear />
+                      </IconButtonStyled>
+                    </Tooltip>
+                  )}
+                </Stack>
+              </Box>
+
+              {/* Hidden File Inputs */}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+              />
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={handleAudioUpload}
+                ref={audioFileRef}
+                style={{ display: 'none' }}
+              />
+
+              {/* Process Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <StyledButton
+                  variant="contained"
+                  startIcon={
+                    isProcessing || audioLoading ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <Psychology />
+                    )
+                  }
+                  onClick={handleProcess}
+                  disabled={(!displayText.trim() && !selectedImage) || isProcessing || audioLoading}
+                  sx={{ 
+                    bgcolor: '#1e3c72',
+                    minWidth: 200,
+                    py: 1.5,
+                  }}
+                  size="large"
+                >
+                  {isProcessing || audioLoading ? 'Processing...' : 'Analyze with AI'}
+                </StyledButton>
+              </Box>
+            </CardContent>
+          </InputCard>
+
+          {/* Results Section */}
+          {((results.length > 0) || (nlpResults.length > 0)) && (
+            <ResultCard>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" color="#1e3c72" gutterBottom>
+                  Analysis Results
+                </Typography>
+                <List>
+                  {(nlpResults.length > 0 ? nlpResults : results).map((item, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{
+                        bgcolor: 'white',
+                        borderRadius: 1,
+                        mb: 1,
+                        border: '1px solid rgba(0,0,0,0.1)',
+                      }}
+                    >
+                      <ListItemText
+                        primary={item.text || item.name || item.description}
+                        primaryTypographyProps={{ fontWeight: 'medium', color: '#1e3c72' }}
+                        secondary={
+                          <Chip
+                            label={item.label || item.type || 'Entity'}
+                            size="small"
+                            sx={{
+                              bgcolor: '#e3f2fd',
+                              color: '#1e3c72',
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </ResultCard>
+          )}
+        </Container>
+      </Box>
+      <style jsx global>{`
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.7;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </Box>
   );
 };
 
-export default SpeechToText;
+export default SmartAssist;
